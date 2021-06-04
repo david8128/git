@@ -57,7 +57,11 @@ void fprintf_or_die(FILE *f, const char *fmt, ...)
 
 void fsync_or_die(int fd, const char *msg)
 {
-	if (fsync(fd) < 0) {
+	int status;
+
+	while ((status = fsync(fd)) < 0 && errno == EINTR)
+		; /* try again */
+	if (status < 0) {
 		die_errno("fsync error on '%s'", msg);
 	}
 }
